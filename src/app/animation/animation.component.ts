@@ -9,9 +9,9 @@ export class AnimationComponent implements OnInit {
 
   ngOnInit(): void {
     // jQuery logic for animation
-    $(document).ready(() => {
-      $('#animateButton').on('click', () => {
-        $('#animateTarget').animate({ fontSize: '24px', opacity: 0.5 }, 1000);
+    $(document).ready(function(){
+      $("button").click(function(){
+        $("div").animate({left: '250px'});
       });
     });
   }

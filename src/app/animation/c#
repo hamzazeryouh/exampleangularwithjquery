@@ -1,0 +1,35 @@
+[Index(nameof(CurrentStatus), nameof(OfferId))]
+public class Offer
+{
+    public int OfferId { get; set; }
+    public DateTime Date { get; set; }
+    public string CurrentStatus { get; set; }
+    public List<string> PreviousStatuses { get; set; }
+    public decimal CurrentOfferAmount { get; set; }
+    public List<OfferAmount> OfferAmounts { get; set; }
+}
+[Index(nameof(BuyerName))]
+public class OfferAmount
+{
+    public int OfferAmountId { get; set; }
+    public string BuyerName { get; set; }
+    public decimal Amount { get; set; }
+    public int OfferId { get; set; }
+    public Offer Offer { get; set; }
+}
+
+public class MyDbContext : DbContext
+{
+    public DbSet<Offer> Offers { get; set; }
+    public DbSet<OfferAmount> OfferAmounts { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<OfferAmount>()
+            .HasOne(oa => oa.Offer)
+            .WithMany(o => o.OfferAmounts)
+            .HasForeignKey(oa => oa.OfferId);
+
+    }
+}
+
