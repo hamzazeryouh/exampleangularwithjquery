@@ -32,4 +32,41 @@ public class MyDbContext : DbContext
 
     }
 }
+// return List Invoices by ids 
+    public List<InvoiceDTO> GetInvoicesByIds(List<int> ListIds)
+    {
+        var invoices = dbContext.Invoices
+            .Where(i => ListIds.Contains(i.InvoiceId))
+            .Select(i => new InvoiceDTO
+            {
+                InvoiceId = i.InvoiceId,
+                Date = i.Date,
+                CustomerName = i.Customer.Name, 
+                Total = i.Total
+            })
+            .ToList();
 
+        return invoices;
+    }
+
+
+CREATE PROCEDURE GetInvoicesInDateRange
+    @StartDate DATE,
+    @EndDate DATE
+AS
+BEGIN
+    SELECT
+        inv.InvoiceId,
+        inv.Date,
+        ISNULL(cus.CustomerName, 'N/A') AS CustomerName,
+        inv.Total,
+        (SELECT COUNT(*) FROM InvoiceItems name WHERE name.InvoiceId = inv.InvoiceId) AS ItemsQuantity,
+        (SELECT TOP 1 p.ProductName FROM InvoiceItems name JOIN Products p ON name.ProductId = p.ProductId WHERE name.InvoiceId = inv.InvoiceId ORDER BY name.Price DESC) AS MostExpensiveItem,
+        (SELECT TOP 1 p.ProductName FROM InvoiceItems name JOIN Products p ON name.ProductId = p.ProductId WHERE name.InvoiceId = inv.InvoiceId ORDER BY name.Price ASC) AS CheapestItem
+    FROM
+        Invoices inv
+    LEFT JOIN
+        Customers cus ON inv.CustomerId = cus.CustomerId
+    WHERE
+        inv.Date >= @StartDate AND inv.Date <= @EndDate
+END
